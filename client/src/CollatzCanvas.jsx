@@ -254,7 +254,7 @@ const CollatzCanvas = ({ sequences }) => {
       if (camera.zoom >= 1.5) {
         // Draw nodes with sequence color
         path.forEach((point, i) => {
-          const nodeSize = 4;
+          const nodeSize = 8;
 
           ctx.beginPath();
           ctx.fillStyle = color;
@@ -266,7 +266,7 @@ const CollatzCanvas = ({ sequences }) => {
             ctx.beginPath();
             ctx.strokeStyle = point.value === 1 ? '#00ccff' : '#aa00ff';
             ctx.lineWidth = 2 / camera.zoom;
-            ctx.arc(point.x, point.y, (nodeSize + 3) / camera.zoom, 0, Math.PI * 2);
+            ctx.arc(point.x, point.y, (nodeSize + 4) / camera.zoom, 0, Math.PI * 2);
             ctx.stroke();
           }
         });
