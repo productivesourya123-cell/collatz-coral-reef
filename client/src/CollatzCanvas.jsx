@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useCallback } from 'react';
 
-const CollatzCanvas = ({ sequences }) => {
+const CollatzCanvas = ({ sequences, onSequenceSelect }) => {
   const canvasRef = useRef(null);
   const cameraRef = useRef({
     x: 0,
@@ -496,8 +496,60 @@ const CollatzCanvas = ({ sequences }) => {
       isDraggingRef.current = false;
     };
 
+    const handleClick = (e) => {
+      // Check if user clicked on a sequence
+      const canvas = canvasRef.current;
+      const camera = cameraRef.current;
+      const mouseX = e.clientX;
+      const mouseY = e.clientY;
+      
+      // Convert screen coordinates to world coordinates
+      const worldX = (mouseX - camera.x) / camera.zoom;
+      const worldY = (mouseY - camera.y) / camera.zoom;
+      
+      // Find if mouse is over any sequence (nodes or line segments)
+      let foundSequence = null;
+      let minDistance = Infinity;
+      const hoverThreshold = 30 / camera.zoom;
+      
+      sequences.forEach((seqData) => {
+        const path = calculateSequencePath(seqData.sequence, canvas.width, canvas.height);
+        
+        // Check nodes
+        path.forEach((point) => {
+          const dx = point.x - worldX;
+          const dy = point.y - worldY;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          
+          if (distance < hoverThreshold && distance < minDistance) {
+            minDistance = distance;
+            foundSequence = seqData.number;
+          }
+        });
+        
+        // Check line segments
+        for (let i = 0; i < path.length - 1; i++) {
+          const p1 = path[i];
+          const p2 = path[i + 1];
+          
+          // Distance from point to line segment
+          const distance = pointToLineDistance(worldX, worldY, p1.x, p1.y, p2.x, p2.y);
+          
+          if (distance < hoverThreshold && distance < minDistance) {
+            minDistance = distance;
+            foundSequence = seqData.number;
+          }
+        }
+      });
+      
+      if (foundSequence && onSequenceSelect) {
+        onSequenceSelect(foundSequence);
+      }
+    };
+
     canvas.addEventListener('wheel', handleWheel, { passive: false });
     canvas.addEventListener('mousedown', handleMouseDown);
+    canvas.addEventListener('click', handleClick);
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mouseup', handleMouseUp);
 
@@ -508,6 +560,7 @@ const CollatzCanvas = ({ sequences }) => {
       window.removeEventListener('resize', resizeCanvas);
       canvas.removeEventListener('wheel', handleWheel);
       canvas.removeEventListener('mousedown', handleMouseDown);
+      canvas.removeEventListener('click', handleClick);
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
       if (animationFrameRef.current) {

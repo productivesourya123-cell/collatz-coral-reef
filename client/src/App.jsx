@@ -8,6 +8,7 @@ function App() {
   const [sequences, setSequences] = useState([]);
   const [inputNumber, setInputNumber] = useState('');
   const [submitStatus, setSubmitStatus] = useState(null);
+  const [selectedSequence, setSelectedSequence] = useState(null);
 
   useEffect(() => {
     // Listen for initial state (receives entire globalCoralData array)
@@ -60,12 +61,22 @@ function App() {
     window.dispatchEvent(new CustomEvent('recenterCamera'));
   };
 
+  const handleSequenceSelect = (sequenceNumber) => {
+    const sequence = sequences.find(s => s.number === sequenceNumber);
+    setSelectedSequence(sequence);
+  };
+
+  const handleCloseSidebar = () => {
+    setSelectedSequence(null);
+  };
+
   return (
     <div className="min-h-screen bg-cyber-black text-white font-mono">
       {/* Main Canvas Viewport */}
       <div className="relative w-full h-screen">
         <CollatzCanvas 
           sequences={sequences}
+          onSequenceSelect={handleSequenceSelect}
         />
 
         {/* Control Overlay */}
@@ -120,6 +131,65 @@ function App() {
             <div>TOTAL CONTRIBUTED NUMBERS: {sequences.length}</div>
           </div>
         </div>
+
+        {/* Sidebar for sequence details */}
+        {selectedSequence && (
+          <div className="absolute top-4 right-4 bottom-4 w-96 bg-cyber-dark/95 backdrop-blur-sm border border-cyber-blue/30 rounded-lg p-4 overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-cyber-blue text-lg font-bold">{`/// SEQUENCE DETAILS`}</h2>
+              <button
+                onClick={handleCloseSidebar}
+                className="text-cyber-red hover:text-cyber-red/80 text-2xl font-bold"
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className="mb-4">
+              <div className="text-cyber-green text-sm mb-2">SEED NUMBER</div>
+              <div className="text-white text-xl font-bold">{selectedSequence.number.toLocaleString()}</div>
+            </div>
+
+            <div className="mb-4">
+              <div className="text-cyber-green text-sm mb-2">TOTAL STEPS</div>
+              <div className="text-white text-xl font-bold">{selectedSequence.iterations}</div>
+            </div>
+
+            <div className="mb-4">
+              <div className="text-cyber-green text-sm mb-2">CALCULATION STEPS</div>
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {selectedSequence.sequence.map((num, index) => {
+                  const isEven = num % 2 === 0;
+                  const operation = isEven ? `${num} ÷ 2 = ${num / 2}` : `${num} × 3 + 1 = ${num * 3 + 1}`;
+                  const type = isEven ? 'EVEN' : 'ODD';
+                  
+                  return (
+                    <div
+                      key={index}
+                      className={`p-2 rounded border ${
+                        isEven 
+                          ? 'bg-cyber-green/10 border-cyber-green/30' 
+                          : 'bg-cyber-orange/10 border-cyber-orange/30'
+                      }`}
+                    >
+                      <div className="flex justify-between items-center">
+                        <span className="text-white font-mono text-sm">
+                          Step {index}: {num.toLocaleString()}
+                        </span>
+                        <span className={`text-xs font-bold ${isEven ? 'text-cyber-green' : 'text-cyber-orange'}`}>
+                          {type}
+                        </span>
+                      </div>
+                      <div className="text-cyber-blue text-xs mt-1">
+                        {operation}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
