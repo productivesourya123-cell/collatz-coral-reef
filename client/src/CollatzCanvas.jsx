@@ -16,6 +16,7 @@ const CollatzCanvas = ({ sequences }) => {
   const animationFrameRef = useRef(null);
   const hoveredNodeRef = useRef(null);
   const hoveredSequenceRef = useRef(null);
+  const hoveredNodeInfoRef = useRef(null);
 
   // Linear interpolation helper
   const lerp = (a, b, t) => a + (b - a) * t;
@@ -274,8 +275,62 @@ const CollatzCanvas = ({ sequences }) => {
 
     ctx.restore();
 
-    // Draw hover tooltip for sequence
-    if (hoveredSequenceRef.current !== null) {
+    // Draw hover tooltip for sequence or node
+    if (hoveredNodeInfoRef.current !== null) {
+      const mouseX = lastMouseRef.current.x;
+      const mouseY = lastMouseRef.current.y;
+      const nodeInfo = hoveredNodeInfoRef.current;
+      
+      // Get the color of the hovered sequence
+      const index = sequences.findIndex(s => s.number === nodeInfo.sequenceNumber);
+      const hue = (index * 137.508) % 360;
+      const saturation = 65 + (index % 20);
+      const lightness = 55 + (index % 15);
+      const color = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+      
+      ctx.save();
+      ctx.font = '14px "Courier New", monospace';
+      ctx.fillStyle = '#00FFFF';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      
+      // Draw tooltip background
+      const isEven = nodeInfo.value % 2 === 0;
+      const operation = isEven ? `${nodeInfo.value} ÷ 2 = ${nodeInfo.value / 2}` : `${nodeInfo.value} × 3 + 1 = ${nodeInfo.value * 3 + 1}`;
+      const type = isEven ? 'EVEN' : 'ODD';
+      const text1 = `Number: ${nodeInfo.value.toLocaleString()}`;
+      const text2 = `${type}: ${operation}`;
+      
+      const textWidth1 = ctx.measureText(text1).width;
+      const textWidth2 = ctx.measureText(text2).width;
+      const maxTextWidth = Math.max(textWidth1, textWidth2);
+      const padding = 12;
+      const lineHeight = 18;
+      
+      ctx.fillStyle = 'rgba(10, 10, 15, 0.95)';
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2;
+      
+      const tooltipHeight = 50;
+      ctx.beginPath();
+      ctx.roundRect(
+        mouseX - maxTextWidth / 2 - padding,
+        mouseY - tooltipHeight,
+        maxTextWidth + padding * 2,
+        tooltipHeight,
+        8
+      );
+      ctx.fill();
+      ctx.stroke();
+      
+      // Draw text
+      ctx.fillStyle = isEven ? '#00FF00' : '#FF6600';
+      ctx.textAlign = 'center';
+      ctx.fillText(text1, mouseX, mouseY - 28);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillText(text2, mouseX, mouseY - 8);
+      ctx.restore();
+    } else if (hoveredSequenceRef.current !== null) {
       const hoveredSeq = sequences.find(s => s.number === hoveredSequenceRef.current);
       if (hoveredSeq) {
         const mouseX = lastMouseRef.current.x;
@@ -378,8 +433,9 @@ const CollatzCanvas = ({ sequences }) => {
         
         // Find if mouse is over any sequence (nodes or line segments)
         let foundSequence = null;
+        let foundNode = null;
         let minDistance = Infinity;
-        const hoverThreshold = 10 / camera.zoom;
+        const hoverThreshold = 15 / camera.zoom;
         
         sequences.forEach((seqData) => {
           const path = calculateSequencePath(seqData.sequence, canvas.width, canvas.height);
@@ -393,6 +449,7 @@ const CollatzCanvas = ({ sequences }) => {
             if (distance < hoverThreshold && distance < minDistance) {
               minDistance = distance;
               foundSequence = seqData.number;
+              foundNode = point;
             }
           });
           
@@ -407,12 +464,22 @@ const CollatzCanvas = ({ sequences }) => {
             if (distance < hoverThreshold && distance < minDistance) {
               minDistance = distance;
               foundSequence = seqData.number;
+              foundNode = null; // Clear node when hovering line
             }
           }
         });
         
         hoveredSequenceRef.current = foundSequence;
-        hoveredNodeRef.current = null; // Clear node hover when using sequence hover
+        
+        // Store node information if hovering over a node
+        if (foundNode) {
+          hoveredNodeInfoRef.current = {
+            value: foundNode.value,
+            sequenceNumber: foundSequence
+          };
+        } else {
+          hoveredNodeInfoRef.current = null;
+        }
       } else {
         // Handle dragging
         const dx = e.clientX - lastMouseRef.current.x;
