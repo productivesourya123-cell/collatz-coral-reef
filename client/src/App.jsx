@@ -134,31 +134,36 @@ function App() {
 
         {/* Sidebar for sequence details */}
         {selectedSequence && (
-          <div className="absolute top-4 right-4 bottom-4 w-96 bg-cyber-dark/95 backdrop-blur-sm border border-cyber-blue/30 rounded-lg p-4 overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-cyber-blue text-lg font-bold">{`/// SEQUENCE DETAILS`}</h2>
-              <button
-                onClick={handleCloseSidebar}
-                className="text-cyber-red hover:text-cyber-red/80 text-2xl font-bold"
-              >
-                ×
-              </button>
-            </div>
-            
-            <div className="mb-4">
-              <div className="text-cyber-green text-sm mb-2">SEED NUMBER</div>
-              <div className="text-white text-xl font-bold">{selectedSequence.number.toLocaleString()}</div>
+          <div className="absolute top-4 right-4 bottom-4 w-96 bg-cyber-dark/95 backdrop-blur-sm border border-cyber-blue/30 rounded-lg flex flex-col">
+            {/* Sticky header with X button */}
+            <div className="sticky top-0 bg-cyber-dark/95 backdrop-blur-sm border-b border-cyber-blue/30 p-4 z-10">
+              <div className="flex justify-between items-center">
+                <h2 className="text-cyber-blue text-lg font-bold">{`/// SEQUENCE DETAILS`}</h2>
+                <button
+                  onClick={handleCloseSidebar}
+                  className="text-cyber-red hover:text-cyber-red/80 text-2xl font-bold"
+                >
+                  ×
+                </button>
+              </div>
+              
+              <div className="mt-4">
+                <div className="text-cyber-green text-sm mb-2">SEED NUMBER</div>
+                <div className="text-white text-xl font-bold">{selectedSequence.number.toLocaleString()}</div>
+              </div>
+
+              <div className="mt-4">
+                <div className="text-cyber-green text-sm mb-2">TOTAL STEPS</div>
+                <div className="text-white text-xl font-bold">{selectedSequence.iterations}</div>
+              </div>
             </div>
 
-            <div className="mb-4">
-              <div className="text-cyber-green text-sm mb-2">TOTAL STEPS</div>
-              <div className="text-white text-xl font-bold">{selectedSequence.iterations}</div>
-            </div>
-
-            <div className="mb-4">
+            {/* Scrollable content */}
+            <div className="flex-1 overflow-y-auto p-4">
               <div className="text-cyber-green text-sm mb-2">CALCULATION STEPS</div>
-              <div className="space-y-2 max-h-96 overflow-y-auto">
-                {selectedSequence.sequence.map((num, index) => {
+              <div className="space-y-2">
+                {[...selectedSequence.sequence].reverse().map((num, reverseIndex) => {
+                  const index = selectedSequence.sequence.length - 1 - reverseIndex;
                   const isEven = num % 2 === 0;
                   const operation = isEven ? `${num} ÷ 2 = ${num / 2}` : `${num} × 3 + 1 = ${num * 3 + 1}`;
                   const type = isEven ? 'EVEN' : 'ODD';
