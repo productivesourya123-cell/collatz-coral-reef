@@ -435,7 +435,7 @@ const CollatzCanvas = ({ sequences }) => {
         let foundSequence = null;
         let foundNode = null;
         let minDistance = Infinity;
-        const hoverThreshold = 15 / camera.zoom;
+        const hoverThreshold = 30 / camera.zoom;
         
         sequences.forEach((seqData) => {
           const path = calculateSequencePath(seqData.sequence, canvas.width, canvas.height);
