@@ -262,11 +262,11 @@ const CollatzCanvas = ({ sequences }) => {
           ctx.fill();
 
           // Draw glow effect for important nodes
-          if (point.value === 1 || i === 0) {
+          if (point.value === 1) {
             ctx.beginPath();
-            ctx.strokeStyle = point.value === 1 ? '#00ccff' : '#aa00ff';
+            ctx.strokeStyle = '#00ccff';
             ctx.lineWidth = 2 / camera.zoom;
-            ctx.arc(point.x, point.y, (nodeSize + 4) / camera.zoom, 0, Math.PI * 2);
+            ctx.arc(point.x, point.y, (nodeSize + 2) / camera.zoom, 0, Math.PI * 2);
             ctx.stroke();
           }
         });
