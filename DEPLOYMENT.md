@@ -1,8 +1,8 @@
-# Deployment Guide
+# Deployment Guide - Railway
 
 ## Prerequisites
 - GitHub account
-- Vercel account (free tier works)
+- Railway account (free tier with $5/month credit)
 
 ## Step 1: Create GitHub Repository
 
@@ -26,100 +26,71 @@ git push -u origin main
 
 Replace `YOUR_USERNAME` with your actual GitHub username.
 
-**QUICK START - Run these exact commands after creating your GitHub repo:**
+## Step 3: Deploy to Railway
 
+### Option A: Using Railway Dashboard (Recommended)
+
+1. Go to https://railway.app
+2. Click "Start a New Project" → "Deploy from GitHub repo"
+3. Authorize Railway to access your GitHub account
+4. Select `collatz-coral-reef` repository
+5. Railway will auto-detect Node.js and configure:
+   - **Build Command**: `npm install && cd client && npm install && npm run build`
+   - **Start Command**: `npm start`
+6. Click "Deploy"
+7. Wait for deployment to complete (2-3 minutes)
+
+### Option B: Using Railway CLI
+
+1. Install Railway CLI:
+```bash
+npm install -g @railway/cli
+```
+
+2. Login to Railway:
+```bash
+railway login
+```
+
+3. Initialize and deploy:
 ```bash
 cd "c:\Users\soury\CascadeProjects\New folder"
-git remote add origin https://github.com/YOUR_USERNAME/collatz-coral-reef.git
-git branch -M main
-git push -u origin main
+railway init
+railway up
 ```
 
-## Step 3: Deploy to Vercel
+## Step 4: Configure Environment Variables
 
-### Option A: Using Vercel CLI (Recommended)
-
-1. Install Vercel CLI:
-```bash
-npm install -g vercel
-```
-
-2. Login to Vercel:
-```bash
-vercel login
-```
-
-3. Deploy:
-```bash
-cd "c:\Users\soury\CascadeProjects\New folder"
-vercel
-```
-
-4. Follow the prompts:
-   - Set up and deploy? `Y`
-   - Link to existing project? `N` (for new project)
-   - Project name: `collatz-coral-reef`
-   - Directory: `./`
-   - Override settings? `N`
-
-5. Deploy to production:
-```bash
-vercel --prod
-```
-
-### Option B: Using Vercel Dashboard
-
-1. Go to https://vercel.com/new
-2. Click "Import" from your Git repository
-3. Select `collatz-coral-reef` from GitHub
-4. Configure:
-   - Framework Preset: "Other"
-   - Root Directory: `./`
-   - Build Command: (leave empty)
-   - Output Directory: (leave empty)
-5. Click "Deploy"
-
-## Step 4: Environment Variables (if needed)
-
-If you need to add environment variables in Vercel:
-1. Go to your project settings in Vercel
-2. Navigate to Settings → Environment Variables
-3. Add any required variables
+Railway automatically sets the `PORT` environment variable. No additional configuration needed.
 
 ## Step 5: Verify Deployment
 
-1. Visit your Vercel deployment URL
+1. Visit your Railway deployment URL (e.g., `https://your-app.railway.app`)
 2. Test the application:
    - Submit a seed number
    - Check if the visualization renders
    - Test hover functionality
    - Verify real-time updates (open in multiple tabs)
 
+## Railway Benefits
+
+- **Full WebSocket support** - Socket.io works out of the box
+- **Persistent storage** - Better for real-time collaborative apps
+- **Generous free tier** - $5/month credit, more resources than Vercel
+- **Simple deployment** - Auto-detects Node.js apps
+- **Custom domains** - Easy to set up
+
 ## Troubleshooting
 
-### Port Issues
-Vercel automatically handles port configuration. The app will use the port provided by Vercel's environment variable.
+### Build Issues
+If the build fails, check the Railway logs and ensure:
+- Node.js version is >= 16.0.0 (set in package.json)
+- All dependencies are properly installed
 
-### Socket.io on Vercel
-The current configuration uses Socket.io which may require additional configuration for Vercel's serverless environment. If you encounter issues, consider:
-- Using a dedicated hosting service like Render, Railway, or Heroku for the backend
-- Or switching to a WebSocket-compatible platform
+### WebSocket Connection
+Railway supports WebSockets natively. If you see connection errors:
+- Check that the deployment URL is correct
+- Verify the app is running (green status in Railway dashboard)
 
-### Alternative Deployment Options
-
-**Render:**
-1. Create account at https://render.com
-2. Connect GitHub repository
-3. Create Web Service for backend
-4. Create Static Site for frontend
-
-**Railway:**
-1. Create account at https://railway.app
-2. Connect GitHub repository
-3. Railway will auto-detect and deploy both backend and frontend
-
-**Heroku:**
-1. Create account at https://heroku.com
-2. Install Heroku CLI
-3. Run: `heroku create`
-4. Run: `git push heroku main`
+### Port Configuration
+The server.js already uses `process.env.PORT || 5000`, which Railway automatically sets. No changes needed.
